@@ -38,6 +38,7 @@ Environment variables:
 
 ### Platform Setup
 - `./script/bootstrap` - Platform-specific setup (calls platform-specific bootstrap scripts)
+- `nix develop` - Linux-only flake dev shell that mirrors `script/linux/bootstrap`
 - `./script/install_cargo_build_deps` - Install Cargo build dependencies
 - `./script/install_cargo_test_deps` - Install Cargo test dependencies
 

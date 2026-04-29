@@ -65,6 +65,14 @@ To build and run Warp from source:
 ./script/presubmit   # fmt, clippy, and tests
 ```
 
+On Linux, you can also use the flake-based dev shell instead of installing host packages with `apt`:
+
+```bash
+nix develop
+./script/bootstrap   # validates the Nix shell instead of calling apt
+./script/run
+```
+
 See [WARP.md](WARP.md) for the full engineering guide, including coding style, testing, and platform-specific notes.
 
 ## Joining the Team

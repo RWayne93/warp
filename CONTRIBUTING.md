@@ -132,6 +132,14 @@ cargo run            # build and run Warp
 ./script/presubmit   # fmt, clippy, and tests
 ```
 
+On Linux, a flake-based dev shell is also available:
+
+```bash
+nix develop
+./script/bootstrap   # validates the Nix shell instead of calling apt
+cargo run
+```
+
 ## Testing
 
 Tests are required for most code changes:

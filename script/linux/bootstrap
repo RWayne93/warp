@@ -2,6 +2,59 @@
 
 set -e
 
+function running_in_nix_shell() {
+  [[ -n "${IN_NIX_SHELL:-}" || -n "${WARP_IN_NIX_SHELL:-}" ]]
+}
+
+function require_commands() {
+  local missing=()
+
+  for command_name in "$@"; do
+    if ! command -v "$command_name" >/dev/null 2>&1; then
+      missing+=("$command_name")
+    fi
+  done
+
+  if [[ "${#missing[@]}" -ne 0 ]]; then
+    echo "Missing required commands in the Nix dev shell: ${missing[*]}" >&2
+    echo "Re-enter the repository with: nix develop" >&2
+    exit 1
+  fi
+}
+
+function warn_if_missing_commands() {
+  local missing=()
+
+  for command_name in "$@"; do
+    if ! command -v "$command_name" >/dev/null 2>&1; then
+      missing+=("$command_name")
+    fi
+  done
+
+  if [[ "${#missing[@]}" -ne 0 ]]; then
+    echo "⚠️  Optional development tools are missing from the Nix shell: ${missing[*]}"
+  fi
+}
+
+function warn_if_gcloud_auth_missing() {
+  if ! command -v gcloud >/dev/null 2>&1; then
+    return
+  fi
+
+  if ! gcloud auth print-identity-token >/dev/null 2>&1; then
+    echo "⚠️  gcloud CLI authentication missing. SSH integration tests will require 'gcloud auth login'."
+  fi
+}
+
+if running_in_nix_shell; then
+  echo "🧊 Detected Nix development shell; skipping apt-based dependency installation."
+  require_commands cargo rustc cargo-clippy rustfmt cmake curl git jq pkg-config protoc python3 unzip
+  warn_if_missing_commands cargo-binstall cargo-nextest diesel fish gcloud gh vim zsh
+  warn_if_gcloud_auth_missing
+  echo "✅ Your Nix shell is ready to build Warp."
+  exit 0
+fi
+
 # Update the apt cache before installing dependencies.  It can be slow, so the install scripts
 # don't do it (to avoid doing it more than once).
 sudo apt update -y
