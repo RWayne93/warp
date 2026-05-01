@@ -3293,10 +3293,21 @@ impl TerminalView {
             ctx.notify();
         });
 
+        let ai_context_model = ctx.add_model(|ctx| {
+            BlocklistAIContextModel::new(
+                sessions.clone(),
+                &model_events_handle,
+                model.clone(),
+                terminal_view_id,
+                agent_view_controller.clone(),
+                ctx,
+            )
+        });
         let ai_input_model = ctx.add_model(|ctx| {
             let mut model = BlocklistAIInputModel::new(
                 model.clone(),
                 agent_view_controller.clone(),
+                ai_context_model.clone(),
                 terminal_view_id,
                 ctx,
             );
@@ -3319,16 +3330,6 @@ impl TerminalView {
                 &model_events_handle,
                 get_relevant_files_controller.clone(),
                 terminal_view_id,
-                ctx,
-            )
-        });
-        let ai_context_model = ctx.add_model(|ctx| {
-            BlocklistAIContextModel::new(
-                sessions.clone(),
-                &model_events_handle,
-                model.clone(),
-                terminal_view_id,
-                agent_view_controller.clone(),
                 ctx,
             )
         });
@@ -4344,6 +4345,7 @@ impl TerminalView {
                         session_id,
                         result,
                         remote_platform,
+                        preinstall_check: _,
                         has_old_binary: _,
                     } => {
                         let (remote_os, remote_arch) = remote_platform
@@ -23249,7 +23251,7 @@ impl TerminalView {
 
                 // On Linux, immediately mark the request permission status as accepted since there's no concept of
                 // requesting desktop notification permissions.
-                #[cfg(target_os = "linux")]
+                #[cfg(any(target_os = "linux", target_os = "freebsd"))]
                 {
                     if let NotificationsDiscoveryBanner::Open {
                         request_outcome, ..
